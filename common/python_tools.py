@@ -9,10 +9,14 @@ import matplotlib.pyplot as plt
 from math import *
 import scipy as sp
 import scipy.stats
+import scipy.optimize
 import glob
+import time
 
 try:
     import numba
+    from numba import jit, int32, float32
+    import numba_scipy
 except:
     print("Cannot find numba. Don't use numba here!")
     
@@ -25,11 +29,11 @@ plt.rcParams['figure.figsize'] = (10.0, 8.0)
 from cycler import cycler
 plt.rcParams['axes.prop_cycle'] = cycler(color=['b','g','r','c','m','y','k','indigo','orange','#137e6d'])
 
-def make_profile_bins(df,lowbin,hibin,nbins,xarg,yarg,option='sem'):
+def make_profile_bins(df,lowbin,hibin,nbins,xarg,yarg,option='sem',func='mean'):
     xbins = np.linspace(lowbin,hibin,nbins+1)
     diff = (xbins[1]-xbins[0])*0.00001
     xbins[-1] = xbins[-1]+diff
-    result = (df[[xarg,yarg]].groupby(np.digitize(df[xarg],bins=xbins,right=False)))[yarg].agg(['mean',option])
+    result = (df[[xarg,yarg]].groupby(np.digitize(df[xarg],bins=xbins,right=False)))[yarg].agg([func,option])
     result = result.reindex(range(1,len(xbins),1))
     xbins[-1] = xbins[-1]-diff
     result["x"] = 0.5*(xbins[:-1]+xbins[1:])
@@ -52,6 +56,9 @@ def make_hists(df,hists,bins,axis,histtype='step',stacked=True):
             if 'hatch' in hd: p.set_hatch(hd['hatch'])
             if 'linewidth' in hd: p.set_linewidth(hd['linewidth'])
 
+def tmp_plot(path="/Users/wketchum/Plots",ftype="pdf"):
+    return "%s/temp_%d.%s"%(path,np.round(time.time()),ftype)
+                
 print("python tools loaded.")
                 
                
